@@ -1,116 +1,110 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
-
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import Navbar from './Navbar';
 import Footer from './Footer';
-import Spinner from './spinner'; // Ensure you have this component
+import { useParams } from 'react-router-dom';
 
 const ProductById = () => {
   const { id } = useParams();
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [clientSecret, setClientSecret] = useState('');
+  const [product, setProduct] = useState();
+  const [loading, setLoading] = useState(true); // Set initial loading to true
+  const [error, setError] = useState('');
 
-  const stripe = useStripe();
-  const elements = useElements();
-  const navigate = useNavigate();
-
-
+  // Fetch products from the API
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const response = await fetch(`http://localhost:4500/api/products/${id}`);
-        if (!response.ok) throw new Error('Product not found');
-        const data = await response.json();
-        setProduct(data);
-      } catch (err) {
-        setError('Failed to load product');
-      } finally {
+    axios
+      .get(`http://localhost:4000/api/products/${id}`)
+      .then((response) => {
+        setProduct(response.data);
         setLoading(false);
-      }
-    };
-
-    fetchProduct();
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
   }, [id]);
 
-  useEffect(() => {
-    if (product) {
-      const fetchClientSecret = async () => {
-        try {
-          const response = await fetch('/create-payment-intent', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ amount: product.price * 100 })
-          });
-          const { clientSecret } = await response.json();
-          setClientSecret(clientSecret);
-        } catch (err) {
-          setError('Failed to initialize payment');
-        }
-      };
+  if (loading) {
+    return <h2>Loading...</h2>;
+  }
 
-      fetchClientSecret();
-    }
-  }, [product]);
-
-  const handlePayment = async () => {
-    if (!stripe || !elements || !clientSecret) return;
-
-    const result = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: {
-        card: elements.getElement(CardElement),
-      }
-    });
-
-    if (result.error) {
-      setError('Payment failed. Please try again.');
-    } else {
-      if (result.paymentIntent.status === 'succeeded') {
-        alert('Payment Successful!');
-        navigate('/checkout');
-      }
-    }
-  };
-
-
-
-  if (loading) return <Spinner />;
-  if (error) return <p>{error}</p>;
-  if (!product) return <p>No product found</p>;
+  if (error) {
+    return <h2>Error: {error}</h2>;
+  }
 
   return (
-    <div>
+    <>
       <Navbar />
-      <div className="w-full max-w-sm bg-gray border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-        <a href="#">
-          <img src={product.image} alt="Product" className="h-56 object-cover w-full" />
-        </a>
-        <div className="px-5 pb-5">
-          <a href="#">
-            <h5 className="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">{product.title}</h5>
+      <div className="grid h-screen bg-gray-800 lg:grid-cols-3 justify-center">
+        <div></div>
+        <div className="group border-gray-100/30 flex w-full max-w-xs flex-col self-center overflow-hidden rounded-lg border bg-gray-700 shadow-md">
+          <a className="relative mx-3 mt-3 flex h-60 overflow-hidden rounded-xl" href="#">
+            <img
+              className="peer absolute top-0 right-0 h-full w-full object-cover"
+              src={product.image}
+              alt="product image"
+            />
+            <img
+              className="peer peer-hover:right-0 absolute top-0 -right-96 h-full w-full object-cover transition-all delay-100 duration-1000 hover:right-0"
+              src={product.image}
+              alt="product image"
+            />
+            <svg
+              className="group-hover:animate-ping group-hover:opacity-30 peer-hover:opacity-0 pointer-events-none absolute inset-x-0 bottom-5 mx-auto text-3xl text-white transition-opacity"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+              role="img"
+              width="1em"
+              height="1em"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 32 32"
+            >
+              <path
+                fill="currentColor"
+                d="M2 10a4 4 0 0 1 4-4h20a4 4 0 0 1 4 4v10a4 4 0 0 1-2.328 3.635a2.996 2.996 0 0 0-.55-.756l-8-8A3 3 0 0 0 14 17v7H6a4 4 0 0 1-4-4V10Zm14 19a1 1 0 0 0 1.8.6l2.7-3.6H25a1 1 0 0 0 .707-1.707l-8-8A1 1 0 0 0 16 17v12Z"
+              />
+            </svg>
+            <span className="absolute top-0 left-0 m-2 rounded-full bg-black px-2 text-center text-sm font-medium text-white">
+              39% OFF
+            </span>
           </a>
-          <div className="flex items-center mt-2.5 mb-5">
-            <div className="flex items-center space-x-1 rtl:space-x-reverse">
-              <svg className="w-4 h-4 text-yellow-300" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 20">
-                <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z" />
-              </svg>
-              <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800 ms-3">5.0</span>
+          <div className="mt-4 px-5 pb-5">
+            <a href="#">
+              <h5 className="text-xl tracking-tight text-white">{product.title}</h5>
+            </a>
+            <div className="mt-2 mb-5 flex items-center justify-between">
+              <p>
+                <span className="text-3xl font-bold text-white">{product.price}</span>
+                <span className="text-sm text-white line-through">$699</span>
+              </p>
             </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-3xl font-bold text-gray-900 dark:text-white">Price: ${product.price}</span>
-   <button className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Add to Cart</button>
-  <button className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" onClick={handlePayment}>Buy</button>
+            <a
+              href="#"
+              className="hover:border-white/40 flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-5 py-2.5 text-center text-sm font-medium text-white focus:outline-none focus:ring-4 focus:ring-blue-300"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="mr-2 h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+              buy here
+            </a>
           </div>
         </div>
       </div>
       <Footer />
-    </div>
+    </>
   );
 };
 
 export default ProductById;
-
 
