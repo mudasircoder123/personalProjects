@@ -7,10 +7,9 @@ import { useParams } from 'react-router-dom';
 const ProductById = () => {
   const { id } = useParams();
   const [product, setProduct] = useState();
-  const [loading, setLoading] = useState(true); // Set initial loading to true
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Fetch products from the API
   useEffect(() => {
     axios
       .get(`http://localhost:4000/api/products/${id}`)
@@ -25,84 +24,111 @@ const ProductById = () => {
   }, [id]);
 
   if (loading) {
-    return <h2>Loading...</h2>;
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-900">
+        <div className="text-center">
+          <div className="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600"></div>
+          <p className="mt-4 text-xl font-medium text-white">Loading product...</p>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <h2>Error: {error}</h2>;
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-900">
+        <div className="rounded-lg bg-red-900 p-8 text-center shadow-lg">
+          <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-red-700 text-2xl font-bold text-white flex items-center justify-center">!</div>
+          <h2 className="text-2xl font-bold text-white">Error Loading Product</h2>
+          <p className="mt-2 text-red-200">{error}</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
       <Navbar />
-      <div className="grid h-screen bg-gray-800 lg:grid-cols-3 justify-center">
-        <div></div>
-        <div className="group border-gray-100/30 flex w-full max-w-xs flex-col self-center overflow-hidden rounded-lg border bg-gray-700 shadow-md">
-          <a className="relative mx-3 mt-3 flex h-60 overflow-hidden rounded-xl" href="#">
-            <img
-              className="peer absolute top-0 right-0 h-full w-full object-cover"
-              src={product.image}
-              alt="product image"
-            />
-            <img
-              className="peer peer-hover:right-0 absolute top-0 -right-96 h-full w-full object-cover transition-all delay-100 duration-1000 hover:right-0"
-              src={product.image}
-              alt="product image"
-            />
-            <svg
-              className="group-hover:animate-ping group-hover:opacity-30 peer-hover:opacity-0 pointer-events-none absolute inset-x-0 bottom-5 mx-auto text-3xl text-white transition-opacity"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
-              role="img"
-              width="1em"
-              height="1em"
-              preserveAspectRatio="xMidYMid meet"
-              viewBox="0 0 32 32"
-            >
-              <path
-                fill="currentColor"
-                d="M2 10a4 4 0 0 1 4-4h20a4 4 0 0 1 4 4v10a4 4 0 0 1-2.328 3.635a2.996 2.996 0 0 0-.55-.756l-8-8A3 3 0 0 0 14 17v7H6a4 4 0 0 1-4-4V10Zm14 19a1 1 0 0 0 1.8.6l2.7-3.6H25a1 1 0 0 0 .707-1.707l-8-8A1 1 0 0 0 16 17v12Z"
-              />
-            </svg>
-            <span className="absolute top-0 left-0 m-2 rounded-full bg-black px-2 text-center text-sm font-medium text-white">
-              39% OFF
-            </span>
-          </a>
-          <div className="mt-4 px-5 pb-5">
-            <a href="#">
-              <h5 className="text-xl tracking-tight text-white">{product.title}</h5>
-            </a>
-            <div className="mt-2 mb-5 flex items-center justify-between">
-              <p>
-                <span className="text-3xl font-bold text-white">{product.price}</span>
-                <span className="text-sm text-white line-through">$699</span>
-              </p>
-            </div>
-            <a
-              href="#"
-              className="hover:border-white/40 flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-5 py-2.5 text-center text-sm font-medium text-white focus:outline-none focus:ring-4 focus:ring-blue-300"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="mr-2 h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+      
+      <main className="container mx-auto py-16 px-4">
+        <div className="mx-auto max-w-4xl overflow-hidden rounded-xl bg-gray-800 shadow-xl">
+          {/* Product Card */}
+          <div className="md:flex">
+            {/* Product Image Section */}
+            <div className="md:w-1/2">
+              <div className="relative h-80 w-full overflow-hidden md:h-96">
+                <div className="absolute top-4 left-4 z-10 rounded-full bg-blue-600 px-3 py-1 text-sm font-bold text-white">
+                  39% OFF
+                </div>
+                <img 
+                  className="h-full w-full object-cover transition-all duration-500 hover:scale-110" 
+                  src={product.image} 
+                  alt={product.title}
                 />
-              </svg>
-              buy here
-            </a>
+              </div>
+            </div>
+            
+            {/* Product Details Section */}
+            <div className="p-6 md:w-1/2 md:p-8">
+              <h1 className="text-2xl font-bold text-white md:text-3xl">{product.title}</h1>
+              
+              <div className="mt-4 flex items-baseline space-x-3">
+                <span className="text-3xl font-bold text-blue-500">{product.price}</span>
+                <span className="text-lg text-gray-400 line-through">$699</span>
+              </div>
+              
+              <div className="mt-6">
+                <div className="mb-2 flex items-center">
+                  <div className="flex space-x-1">
+                    <div className="h-4 w-4 rounded-full bg-yellow-400"></div>
+                    <div className="h-4 w-4 rounded-full bg-yellow-400"></div>
+                    <div className="h-4 w-4 rounded-full bg-yellow-400"></div>
+                    <div className="h-4 w-4 rounded-full bg-yellow-400"></div>
+                    <div className="h-4 w-4 rounded-full bg-gray-600"></div>
+                  </div>
+                  <span className="ml-2 text-sm text-gray-300">4.0 (24 reviews)</span>
+                </div>
+                
+                <div className="flex items-center">
+                  <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                  <span className="ml-2 text-sm text-gray-300">In Stock</span>
+                </div>
+              </div>
+              
+              <div className="mt-8 space-y-4">
+                <button className="w-full rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  Add to Cart
+                </button>
+                
+                <button className="w-full rounded-lg border border-gray-600 bg-transparent px-6 py-3 font-medium text-gray-300 transition-colors hover:border-blue-400 hover:text-blue-400">
+                  order
+                </button>
+              </div>
+              
+              <div className="mt-8 border-t border-gray-700 pt-6">
+                <h3 className="mb-2 text-lg font-medium text-white">Quick Overview</h3>
+                <ul className="space-y-1 text-sm text-gray-300">
+                  <li className="flex items-center">
+                    <span className="mr-2 block h-1 w-1 rounded-full bg-blue-500"></span>
+                    Premium quality product
+                  </li>
+                  <li className="flex items-center">
+                    <span className="mr-2 block h-1 w-1 rounded-full bg-blue-500"></span>
+                    1 year warranty
+                  </li>
+                  <li className="flex items-center">
+                    <span className="mr-2 block h-1 w-1 rounded-full bg-blue-500"></span>
+                    Fast shipping available
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </main>
+      
       <Footer />
-    </>
+    </div>
   );
 };
 
